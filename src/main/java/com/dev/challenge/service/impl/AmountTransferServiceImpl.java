@@ -20,16 +20,14 @@ public class AmountTransferServiceImpl implements AmountTransferService {
     public TransferredMoneyDetails amountTransfer(TransferMoney transferMoney) throws Exception {
         if(transferMoney.getFromAccount()==null) throw new Exception("From Account Number can not be null");
         if(transferMoney.getToAccount()==null) throw new Exception("To Account Number can not be null");
-        if(transferMoney.getAmount()>0) throw new Exception("Amount must be greater than 0");
+        if(transferMoney.getAmount()<0) throw new Exception("Amount must be greater than 0");
         Account fromAccount = new Account(transferMoney.getFromAccount(), 15000);
         Account toAccount = new Account(transferMoney.getToAccount(), 16000);
         MoneyTransferService moneyTransferService = new MoneyTransferService(fromAccount, toAccount, transferMoney.getAmount());
         TransferServiceRunner transferServiceRunner = new TransferServiceRunner(moneyTransferService);
         ExecutorService es = Executors.newSingleThreadExecutor();
         Future futureTransferredMoneyDetails = es.submit(transferServiceRunner);
-        if(futureTransferredMoneyDetails.isDone()){
 
-        }
         return (TransferredMoneyDetails) futureTransferredMoneyDetails.get();
     }
 }
