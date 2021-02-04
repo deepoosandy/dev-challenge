@@ -1,6 +1,8 @@
 package com.dev.challenge.controller;
 
 
+import com.dev.challenge.dto.Account;
+import com.dev.challenge.dto.OpenAccount;
 import com.dev.challenge.dto.TransferredMoneyDetails;
 import com.dev.challenge.dto.TransferMoney;
 import com.dev.challenge.service.AmountTransferService;
@@ -26,6 +28,11 @@ public class AccountController {
         ResponseEntity<TransferredMoneyDetails> responseEntity=new
                 ResponseEntity<TransferredMoneyDetails>(amountTransferService.amountTransfer(transferMoney), HttpStatus.OK);
         return responseEntity;
+    }
+    @PostMapping("/openaccount")
+    public ResponseEntity<Account> openAccount(@RequestBody OpenAccount openAccount){
+
+        return null;
     }
 
 

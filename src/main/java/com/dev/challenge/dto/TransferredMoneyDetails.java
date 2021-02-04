@@ -7,7 +7,6 @@ import lombok.EqualsAndHashCode;
 import java.time.LocalDateTime;
 
 @Data
-@EqualsAndHashCode
 public class TransferredMoneyDetails {
     private String fromAccount;
     private String toAccount;

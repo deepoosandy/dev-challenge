@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
-@EqualsAndHashCode
 public class CuurentStatusOfAccounts {
     private Account fromAccount;
     private Account toAccount;

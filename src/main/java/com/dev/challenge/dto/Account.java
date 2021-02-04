@@ -6,10 +6,10 @@ import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 
 @Data
-@EqualsAndHashCode
 public class Account {
     private String accountNumber;
     private double amountInAccount;
+    private String accountHolderName;
     private AccountDetails accountDetails;
 
     public Account(String accountNumber, double amountInAccount) {

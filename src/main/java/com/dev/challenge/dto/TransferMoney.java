@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
-@EqualsAndHashCode
 public class TransferMoney {
     private String fromAccount;
     private String toAccount;
