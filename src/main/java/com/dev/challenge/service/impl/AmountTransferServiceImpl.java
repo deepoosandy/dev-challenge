@@ -1,33 +1,41 @@
 package com.dev.challenge.service.impl;
 
-import com.dev.challenge.dto.Account;
 import com.dev.challenge.dto.TransferMoney;
 import com.dev.challenge.dto.TransferredMoneyDetails;
+import com.dev.challenge.exception.BaseException;
+import com.dev.challenge.repository.AccountRepository;
 import com.dev.challenge.service.AmountTransferService;
 import com.dev.challenge.transferservices.MoneyTransferService;
 import com.dev.challenge.transferservices.TransferServiceRunner;
-import org.springframework.stereotype.Service;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
-@Service
 public class AmountTransferServiceImpl implements AmountTransferService {
 
-    @Override
-    public TransferredMoneyDetails amountTransfer(TransferMoney transferMoney) throws Exception {
-        if(transferMoney.getFromAccount()==null) throw new Exception("From Account Number can not be null");
-        if(transferMoney.getToAccount()==null) throw new Exception("To Account Number can not be null");
-        if(transferMoney.getAmount()<0) throw new Exception("Amount must be greater than 0");
-        Account fromAccount = new Account(transferMoney.getFromAccount(), 15000);
-        Account toAccount = new Account(transferMoney.getToAccount(), 16000);
-        MoneyTransferService moneyTransferService = new MoneyTransferService(fromAccount, toAccount, transferMoney.getAmount());
-        TransferServiceRunner transferServiceRunner = new TransferServiceRunner(moneyTransferService);
-        ExecutorService es = Executors.newSingleThreadExecutor();
-        Future futureTransferredMoneyDetails = es.submit(transferServiceRunner);
+    @Autowired
+    private AccountRepository accountRepository;
 
-        return (TransferredMoneyDetails) futureTransferredMoneyDetails.get();
+    @Override
+    public TransferredMoneyDetails amountTransfer(TransferMoney transferMoney){
+        if (StringUtils.isBlank(transferMoney.getFromAccount())) throw new BaseException("From Account Number can not be null.", 400);
+        if (StringUtils.isBlank(transferMoney.getToAccount())) throw new BaseException("To Account Number can not be null.", 400);
+        if (transferMoney.getAmount() <= 0) throw new BaseException("Amount must be greater than 0", 400);
+
+        TransferredMoneyDetails transferredMoneyDetails;
+        try {
+            MoneyTransferService moneyTransferService = new MoneyTransferService(transferMoney, accountRepository);
+            TransferServiceRunner transferServiceRunner = new TransferServiceRunner(moneyTransferService);
+            ExecutorService es = Executors.newSingleThreadExecutor();
+            Future<TransferredMoneyDetails> futureTransferredMoneyDetails = es.submit(transferServiceRunner);
+            transferredMoneyDetails = futureTransferredMoneyDetails.get();
+        } catch (BaseException base) {
+            throw new BaseException(base.getMessage(), base.getCode());
+        } catch (Exception e) {
+            throw new BaseException( e.getCause().getMessage(),  500);
+        }
+        return transferredMoneyDetails;
     }
 }

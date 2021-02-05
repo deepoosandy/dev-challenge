@@ -1,9 +1,6 @@
 package com.dev.challenge.dto;
 
-import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
 
 @Data
 public class Account {

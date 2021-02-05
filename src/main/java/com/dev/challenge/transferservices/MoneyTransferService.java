@@ -1,57 +1,64 @@
 package com.dev.challenge.transferservices;
 
-import com.dev.challenge.dto.Account;
-import com.dev.challenge.dto.CuurentStatusOfAccounts;
-import com.dev.challenge.dto.PreviousStatueOfAccounts;
+import com.dev.challenge.domain.Account;
+import com.dev.challenge.dto.TransferMoney;
 import com.dev.challenge.dto.TransferredMoneyDetails;
+import com.dev.challenge.exception.BaseException;
+import com.dev.challenge.repository.AccountRepository;
+import org.springframework.dao.DataAccessException;
 
 import java.time.LocalDateTime;
-
+import java.util.ArrayList;
+import java.util.List;
 
 public class MoneyTransferService {
 
-    private Account fromAccount;
-    private Account toAccount;
-    private volatile boolean isTransactionDone = true;
-    private double transferAmount;
-    private PreviousStatueOfAccounts previousStatueOfAccounts;
+    private AccountRepository accountRepository;
+    private TransferMoney transferMoney;
 
 
-    public MoneyTransferService(Account fromAccount, Account toAccount, double amount) {
-        this.fromAccount = fromAccount;
-        this.toAccount = toAccount;
-        Account fromAcc = new Account(fromAccount.getAccountNumber(), fromAccount.getAmountInAccount());
-        Account toAcc = new Account(toAccount.getAccountNumber(), toAccount.getAmountInAccount());
-        previousStatueOfAccounts = new PreviousStatueOfAccounts(fromAcc, toAcc);
-        this.transferAmount = amount;
+    public MoneyTransferService(TransferMoney transferMoney, AccountRepository accountRepository) {
+        this.accountRepository = accountRepository;
+        this.transferMoney = transferMoney;
+
     }
 
-    public TransferredMoneyDetails transferMoneyFromOneAccountToOther() throws InterruptedException {
+    public TransferredMoneyDetails transferMoneyFromOneAccountToOther() throws BaseException {
         TransferredMoneyDetails transferredMoneyDetails = new TransferredMoneyDetails();
-
-        if ((fromAccount.getAmountInAccount() - transferAmount) >= 0) {
-            /**
-             * Transferring amount from one account to other account.
-             */
-            double newBalanceOfToAccount = toAccount.getAmountInAccount() + transferAmount;
-            toAccount.setAmountInAccount(newBalanceOfToAccount);
-            double newBalanceOfFromAccount = fromAccount.getAmountInAccount() - transferAmount;
-            fromAccount.setAmountInAccount(newBalanceOfFromAccount);
+        Account fromAccount = null;
+        Account toAccount = null;
+        try {
+            fromAccount = accountRepository.findByAccountNumber(transferMoney.getFromAccount());
+            if(fromAccount==null)throw new BaseException("Account# " + transferMoney.getFromAccount() + " not exist in the system", 400);
+        } catch (DataAccessException doaEx) {
+            throw new BaseException("Account# " + transferMoney.getFromAccount() + " not exist in the system", 400);
+        }
+        try {
+            toAccount = accountRepository.findByAccountNumber(transferMoney.getToAccount());
+            if(toAccount==null)throw new BaseException("Account# " + transferMoney.getToAccount() + " not exist in the system", 400);
+        } catch (DataAccessException doaEx) {
+            throw new BaseException("Account# " + transferMoney.getToAccount() + " not exist in the system", 400);
+        }
+        double transferAmount = transferMoney.getAmount();
+        if ((fromAccount.getBalance() - transferAmount) >= 0) {
+            double newBalanceOfToAccount = toAccount.getBalance() + transferAmount;
+            toAccount.setBalance(newBalanceOfToAccount);
+            double newBalanceOfFromAccount = fromAccount.getBalance() - transferAmount;
+            fromAccount.setBalance(newBalanceOfFromAccount);
             transferredMoneyDetails.setAmountTransferred(transferAmount);
             transferredMoneyDetails.setMsg("Transaction successful!");
             transferredMoneyDetails.setTransferDate(LocalDateTime.now());
-
+            List<Account> accounts = new ArrayList<>();
+            accounts.add(fromAccount);
+            accounts.add(toAccount);
+            accountRepository.saveAll(accounts);
 
         } else {
-            transferredMoneyDetails.setMsg("Transaction failed!");
-            transferredMoneyDetails.setTransferDate(LocalDateTime.now());
+            throw new BaseException("Insufficient amount in Account# " + fromAccount.getAccountNumber() + " not exist in the system", 400);
         }
 
         transferredMoneyDetails.setFromAccount(fromAccount.getAccountNumber());
         transferredMoneyDetails.setToAccount(toAccount.getAccountNumber());
-        CuurentStatusOfAccounts cuurentStatusOfAccounts = new CuurentStatusOfAccounts(fromAccount, toAccount);
-        transferredMoneyDetails.setCuurentStatusOfAccounts(cuurentStatusOfAccounts);
-        transferredMoneyDetails.setPreviousStatueOfAccounts(previousStatueOfAccounts);
         return transferredMoneyDetails;
     }
 

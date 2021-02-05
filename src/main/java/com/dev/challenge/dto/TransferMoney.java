@@ -1,8 +1,6 @@
 package com.dev.challenge.dto;
 
-import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 @Data
 public class TransferMoney {
