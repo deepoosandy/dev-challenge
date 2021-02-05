@@ -9,10 +9,12 @@ import com.dev.challenge.transferservices.MoneyTransferService;
 import com.dev.challenge.transferservices.TransferServiceRunner;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+@Service
 public class AmountTransferServiceImpl implements AmountTransferService {
 
     @Autowired
